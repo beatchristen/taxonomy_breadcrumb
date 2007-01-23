@@ -208,7 +208,7 @@ function taxonomy_breadcrumb_admin_settings() {
     '#type' => 'textfield',
     '#title' => t('Node types to include or exclude'),
     '#default_value' => variable_get('taxonomy_breadcrumb_node_types', TAXONOMY_BREADCRUMB_NODE_TYPES_DEFAULT),
-    '#description' => t('Enter a list of node types to include or exclude applying taxonomy based breadcrumbs to.  Separate multiple values with spaces. <p>Node types currently enabled:<ul><li>' . implode($node_bases, '</li><li>') . '</li></ul></p>'),
+    '#description' => t('Enter a list of node types to include or exclude applying taxonomy based breadcrumbs to.  Separate multiple values with spaces. <p>Node types currently enabled:') . '<ul><li>' . implode($node_bases, '</li><li>') . '</li></ul></p>',
     '#weight' => 20,
   ); 
 
