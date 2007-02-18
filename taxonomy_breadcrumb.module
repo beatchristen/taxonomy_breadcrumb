@@ -221,7 +221,7 @@ function taxonomy_breadcrumb_admin_settings() {
 function taxonomy_breadcrumb_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) { 
   // If we are on a page view (not just a teaser), set the breadcrumb
   // $a4 contains TRUE if we are on a page view
-  if ($op == 'view' && $a4) {
+  if ($op == 'view' && $a4 && !drupal_is_front_page()) {
     taxonomy_breadcrumb_generate_breadcrumb($node->nid);
   }
 }
