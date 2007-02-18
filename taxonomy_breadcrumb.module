@@ -269,7 +269,7 @@ function taxonomy_breadcrumb_form_alter($form_id, &$form) {
       '#type' => 'textfield',
       '#title' => t('Breadcrumb path (taxonomy_breadcrumb)'),
       '#default_value' => taxonomy_breadcrumb_get_vocabulary_path($form['vid']['#value']), 
-      '#maxlength' => 64,
+      '#maxlength' => 128,
       '#description' => t('Specify the path this vocabulary links to as a breadcrumb.  If blank, the breadcrumb will not appear.  Use a relative path and don\'t add a trailing slash.  For example: node/42 or my/path/alias.'),
       '#weight' => 0,
     );
@@ -279,7 +279,7 @@ function taxonomy_breadcrumb_form_alter($form_id, &$form) {
       '#type' => 'textfield',
       '#title' => t('Breadcrumb path (taxonomy_breadcrumb)'),
       '#default_value' => taxonomy_breadcrumb_get_term_path($form['tid']['#value']), 
-      '#maxlength' => 64,
+      '#maxlength' => 128,
       '#description' => t('Specify the path this term links to as a breadcrumb.  If blank, the breadcrumb links to the default taxonomy page.  Use a relative path and don\'t add a trailing slash.  For example: node/42 or my/path/alias.'),
       '#weight' => 0,
     );
