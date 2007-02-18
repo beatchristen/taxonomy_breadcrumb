@@ -110,7 +110,7 @@ function taxonomy_breadcrumb_generate_breadcrumb($nid) {
     // HOME breadcrumb generation
     $home_text = variable_get('taxonomy_breadcrumb_home', '');
     if ($home_text != '') {
-      $breadcrumb[] = l($home_text, NULL);
+      $breadcrumb[] = l(t($home_text), NULL);
     }
 
     // VOCABULARY breadcrumb generation
