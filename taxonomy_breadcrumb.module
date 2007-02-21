@@ -48,7 +48,7 @@ define('TAXONOMY_BREADCRUMB_NODE_TYPES_DEFAULT', 'book');
  * Similar to taxonomy_node_get_terms, but only return the lightest term in the 
  * lightest vocab for the node.
  */
-function taxonomy_context_node_get_lightest_term($nid) {
+function taxonomy_breadcrumb_node_get_lightest_term($nid) {
   // We only want the first row of the result--this is the lightest term of the 
   // lightest vocab.  This query should be the same as the query found in 
   // taxonomy_node_get_terms.
@@ -105,7 +105,7 @@ function taxonomy_breadcrumb_generate_breadcrumb($nid) {
   if ($in_list == variable_get('taxonomy_breadcrumb_include_nodes', FALSE) ) {
 
     // Extract lightest term from lightest vocabulary assosciated with node.
-    $term = taxonomy_context_node_get_lightest_term($nid);
+    $term = taxonomy_breadcrumb_node_get_lightest_term($nid);
 
     // HOME breadcrumb generation
     $home_text = variable_get('taxonomy_breadcrumb_home', '');
@@ -155,10 +155,65 @@ function taxonomy_breadcrumb_menu($may_cache) {
       'access' => user_access('administer site configuration'),
       'type' => MENU_NORMAL_ITEM, // optional
     );
+    
+    // Similiar to core menu item in taxonomy_menu, except callback is different
+    $items[] = array('path' => 'taxonomy/term',
+      'title' => t('Taxonomy term'),
+      'callback' => 'taxonomy_breadcrumb_term_page',
+      'access' => user_access('access content'),
+      'type' => MENU_CALLBACK);
+    
   }
 
   return $items;
 }
+
+/**
+ * This function overrides the core taxonomy_term_page.  First, call the core
+ * taxonomy_term_page.  Then, alter the breadcrumb trail.  This module's 
+ * hook_menu and a module weight greater than taxonomy's (the module weight is
+ * in the system table and is set in the taxonomy_breadcrumb.install) ensure 
+ * this function gets called for the taxonomy/term path.
+ * Note: Vocabularies are never shown in the breadcrumb trail on taxonomy/term 
+ * pages, even if they are setup to be shown on normal node pages.  This is 
+ * consistent with the core taxonomy/term behavior.
+ */
+function taxonomy_breadcrumb_term_page($str_tids = '', $depth = 0, $op = 'page') {
+
+  // Call the core taxonomy_term_page function
+  $output = taxonomy_term_page($str_tids, $depth, $op);
+  
+  // Adjust the breadcrumb trail
+  $breadcrumb = drupal_get_breadcrumb();
+
+  // HOME breadcrumb link
+  $home_text = variable_get('taxonomy_breadcrumb_home', '');
+  if ($home_text != '') {  // Adjust HOME breadcrumb link
+    $breadcrumb[0] = l(t($home_text), NULL);
+  }
+  else { // Remove HOME breadcrumb link
+    $breadcrumb = array_shift($breadcrumb);
+  }
+
+  // Intentional omission: do not show vocabs here (different from
+  // taxonomy_breadcrumb_generate_breadcrumb, but consistent with core's
+  // taxonomy/term).
+
+
+  // Show current TERM as the last term in the breadcrumb trail.  If multiple 
+  // terms are shown, only show first.  This behavior follows the core taxonomy 
+  // module's taxonomy_term_page.  Term is NOT a link so page does not link to 
+  // itself.
+  if (variable_get('taxonomy_breadcrumb_show_current_term', TRUE)) {
+    $terms = taxonomy_terms_parse_string($str_tids);
+    $first_term = taxonomy_get_term($terms['tids'][0]);
+    $breadcrumb[] = $first_term->name;
+  }
+
+  drupal_set_breadcrumb($breadcrumb);
+  return $output;
+}
+
 
 function taxonomy_breadcrumb_admin_settings() {
   $form['settings'] = array(

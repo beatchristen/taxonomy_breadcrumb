@@ -50,3 +50,12 @@ function taxonomy_breadcrumb_uninstall() {
   db_query('DROP TABLE {taxonomy_breadcrumb_vocabulary}');
   db_query('DROP TABLE {taxonomy_breadcrumb_term}');
 }
+
+function taxonomy_breadcrumb_update_1() {
+
+  // Ensure this module's weight is larger than the core taxonomy module.
+  // This allows for this module's menu callback for taxonomy/term to get called
+  // instead of the core taxonomy/term callback.
+  $ret[] = update_sql("UPDATE {system} SET weight = 10 WHERE name = 'taxonomy_breadcrumb'");
+  return $ret;
+}
