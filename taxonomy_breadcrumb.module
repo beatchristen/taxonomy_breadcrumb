@@ -4,25 +4,22 @@
 /**
  * @file
  * The taxonomy_breadcrumb module generates taxonomy based breadcrumbs on node 
- * pages, where the breadcrumbs link to the normal taxonomy/term pages or to 
- * administrator defined pages.
- *
- * Breadcrumbs take on the form:  
+ * pages and taxonomy/term pages.  The breadcrumb trail takes on the form:
  *   [HOME] >> [VOCABULARY] >> TERM >> [TERM] ...
- *
- *   - The HOME breadcrumb (if present) will link to the homepage.  The text 
- *     displayed for HOME should be administrator configurable.  If the HOME
+ * 
+ *   - The HOME breadcrumb (if present) links to the homepage.  The text 
+ *     displayed for HOME is administrator configurable.  If the HOME 
  *     breadcrumb is not defined by the administrator, it will not appear
  *     in the breadcrumb trail.
- *   - The VOCABULARY breadcrumb (if present) will link to an administrator 
- *     defined page (node).  If the VOCABULARY does not have an adminstrator
+ *   - The VOCABULARY breadcrumb (if present) will link to an administrator
+ *     defined page.  If the VOCABULARY does not have an administrator 
  *     defined page, it will not appear in the breadcrumb trail.
  *   - Each TERM breadcrumb will link to either 
  *     (1) taxonomy/term/tid by default, or 
- *     (2) an administrator defined page (node) if one is defined for the term.
+ *     (2) an administrator defined page if one is defined for the term.
  *   - These administrator defined "breadcrumb links" for VOCABULARIES and TERMS
- *     can be controlled from the add/edit vocabulary and add/edit term 
- *     administrator pages. 
+ *     are controlled from the add/edit vocabulary and add/edit term
+ *     administrator pages.
  *
  * Examples:
  *   home >> term >> term
@@ -276,20 +273,21 @@ function taxonomy_breadcrumb_help($section) {
       $output .= t('<p>See %link.</p>', array('%link' => l('admin/settings/taxonomy-breadcrumb', 'admin/settings/taxonomy-breadcrumb')));
       break;
     case 'admin/settings/taxonomy-breadcrumb':
-      $output .= t('<p>The taxonomy_breadcrumb module generates taxonomy based breadcrumbs on node pages, where the breadcrumbs link to the normal taxonomy/term pages or to administrator defined pages.  Breadcrumbs take the following form:</p>
-                  <p>[HOME] >> [VOCABULARY] >> TERM >> [TERM] ...</p>
-                  <p><ul>
-                  <li>The text displayed for HOME is configurable below.  The HOME breadcrumb (if present) will link to the homepage.  If the HOME breadcrumb text is not defined (blank), it will not appear in the breadcrumb trail.</li>
-                  <li>The VOCABULARY breadcrumb (if present) will link to an administrator defined page (node).  If the VOCABULARY does not have an administrator defined page, it will not appear in the breadcrumb trail. This can be configured on the add/edit vocabulary pages within !tax_link (taxonomy).</li>
-                  <li>Each TERM breadcrumb will link to either (1) taxonomy/term/tid by default, or (2) an administrator defined page (node) if one is defined for the term.  This can be configured on the add/edit term pages within !tax_link (taxonomy).</li>
-                  </ul></p>
-                  Examples:
-                  <ul>
-                  <li>home >> term >> term</li>
-                  <li>mysite >> term >> term</li>
-                  <li>home >> vocabulary >> term >> term</li>
-                  <li>vocabulary >> term >> term</li>
-                  </ul>', array('!tax_link' => l('administer >> categories', 'admin/content/taxonomy')));
+      $output .= t('The taxonomy_breadcrumb module generates taxonomy based breadcrumbs on node pages and taxonomy/term pages.  The breadcrumb trail takes on the form:
+                    <ul>[HOME] >> [VOCABULARY] >> TERM >> [TERM] ...</ul>
+                    <ul>
+                    <li>The text displayed for HOME is configurable below.  The <em>HOME </em>breadcrumb (if present) links to the homepage.  The text displayed for HOME is administrator configurable.  If the HOME breadcrumb is not defined by the administrator, it will not appear in the breadcrumb trail.</li>
+                    <li>The <em>VOCABULARY </em>breadcrumb (if present) will link to an administrator defined page.  If the VOCABULARY does not have an administrator defined page, it will not appear in the breadcrumb trail. This can be configured on the add/edit vocabulary pages within !tax_link (taxonomy).</li>
+                    <li>Each <em>TERM </em>breadcrumb will link to either (1) taxonomy/term/tid by default, or (2) an administrator defined page if one is defined for the term. This can be configured on the add/edit term pages within !tax_link (taxonomy).</li>
+                    </ul>
+                    <br>
+                    <p>Examples:
+                    <ul>
+                    <li>home >> term >> term</li>
+                    <li>mysite >> term >> term</li>
+                    <li>home >> vocabulary >> term >> term</li>
+                    <li>vocabulary >> term >> term</li>
+                    </ul>', array('!tax_link' => l('administer >> categories', 'admin/content/taxonomy')));
       break;
   }
   return $output;
