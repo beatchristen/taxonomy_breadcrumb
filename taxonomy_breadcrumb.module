@@ -90,54 +90,47 @@ function taxonomy_breadcrumb_get_term_path($tid) {
  * If the current drupal path (q=) is /node/nid, generate the breadcrumb trail 
  * based on nid.
  */
-function taxonomy_breadcrumb_generate_breadcrumb($nid) {
+function taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
 
-  // Load node from database, we will need to know the node type (page, book, etc.)
-  $node = node_load($nid);
+  $term = taxonomy_get_term($tid);
   
-  // See if the node type of the current node is part of the node types listed on the advanced settings page.
-  $array_of_types = explode(' ', variable_get('taxonomy_breadcrumb_node_types', TAXONOMY_BREADCRUMB_NODE_TYPES_DEFAULT));
-  $in_list = in_array($node->type, $array_of_types);
-  
-  // if the node type IS IN     the node types list and the list IS     inclusive OR 
-  // if the node type IS NOT IN the node types list and the list IS NOT inclusive (e.g. exclusive)
-  // THEN modify the breadcrumb trail.
-  if ($in_list == variable_get('taxonomy_breadcrumb_include_nodes', FALSE) ) {
+  // HOME breadcrumb generation
+  $home_text = variable_get('taxonomy_breadcrumb_home', '');
+  if ($home_text != '') {
+    $breadcrumb[] = l(t($home_text), NULL);
+  }
 
-    // Extract lightest term from lightest vocabulary assosciated with node.
-    $term = taxonomy_breadcrumb_node_get_lightest_term($nid);
+  // VOCABULARY breadcrumb generation
+  $vocabulary_path = taxonomy_breadcrumb_get_vocabulary_path($term->vid);
+  if ($vocabulary_path != NULL) {
+    $vocabulary = taxonomy_get_vocabulary($term->vid);
+    $breadcrumb[] = l($vocabulary->name, $vocabulary_path);      
+  }
 
-    // HOME breadcrumb generation
-    $home_text = variable_get('taxonomy_breadcrumb_home', '');
-    if ($home_text != '') {
-      $breadcrumb[] = l(t($home_text), NULL);
+  // TERM breadcrumb generation
+  $parent_terms = array_reverse(taxonomy_get_parents_all($tid));
+  foreach ($parent_terms as $parent_term) {
+    $term_path = taxonomy_breadcrumb_get_term_path($parent_term->tid);
+    if ($term_path == NULL) {
+      $term_path = "taxonomy/term/$parent_term->tid";
     }
-
-    // VOCABULARY breadcrumb generation
-    $vocabulary_path = taxonomy_breadcrumb_get_vocabulary_path($term->vid);
-    if ($vocabulary_path != NULL) {
-      $vocabulary = taxonomy_get_vocabulary($term->vid);
-      $breadcrumb[] = l($vocabulary->name, $vocabulary_path);      
+    // Do not create links to own self if we are on a taxonomy/term page.
+    if ($is_term_page && $parent_term->tid == $tid) {
+      $breadcrumb[] = $parent_term->name;
     }
-
-    // TERM breadcrumb generation
-    $parent_terms = array_reverse(taxonomy_get_parents_all($term->tid));
-    foreach ($parent_terms as $parent_term) {
-      $term_path = taxonomy_breadcrumb_get_term_path($parent_term->tid);
-      if ($term_path == NULL) {
-        $term_path = "taxonomy/term/$parent_term->tid";
-      }
+    else {
       $breadcrumb[] = l($parent_term->name, $term_path);
     }
-
-    // Remove current TERM from end of breadcrumb trail
-    if (!variable_get('taxonomy_breadcrumb_show_current_term', TRUE)) {
-      array_pop($breadcrumb);
-    }
-
-    drupal_set_breadcrumb($breadcrumb);
   }
+
+  // Remove current TERM from end of breadcrumb trail
+  if (!variable_get('taxonomy_breadcrumb_show_current_term', TRUE)) {
+    array_pop($breadcrumb);
+  }
+  return $breadcrumb;
+
 }
+
 
 /**
  * Implementation of hook_menu().
@@ -169,52 +162,8 @@ function taxonomy_breadcrumb_menu($may_cache) {
 }
 
 /**
- * This function overrides the core taxonomy_term_page.  First, call the core
- * taxonomy_term_page.  Then, alter the breadcrumb trail.  This module's 
- * hook_menu and a module weight greater than taxonomy's (the module weight is
- * in the system table and is set in the taxonomy_breadcrumb.install) ensure 
- * this function gets called for the taxonomy/term path.
- * Note: Vocabularies are never shown in the breadcrumb trail on taxonomy/term 
- * pages, even if they are setup to be shown on normal node pages.  This is 
- * consistent with the core taxonomy/term behavior.
+ * Settings page for module.
  */
-function taxonomy_breadcrumb_term_page($str_tids = '', $depth = 0, $op = 'page') {
-
-  // Call the core taxonomy_term_page function
-  $output = taxonomy_term_page($str_tids, $depth, $op);
-  
-  // Adjust the breadcrumb trail
-  $breadcrumb = drupal_get_breadcrumb();
-
-  // HOME breadcrumb link
-  $home_text = variable_get('taxonomy_breadcrumb_home', '');
-  if ($home_text != '') {  // Adjust HOME breadcrumb link
-    $breadcrumb[0] = l(t($home_text), NULL);
-  }
-  else { // Remove HOME breadcrumb link
-    $breadcrumb = array_shift($breadcrumb);
-  }
-
-  // Intentional omission: do not show vocabs here (different from
-  // taxonomy_breadcrumb_generate_breadcrumb, but consistent with core's
-  // taxonomy/term).
-
-
-  // Show current TERM as the last term in the breadcrumb trail.  If multiple 
-  // terms are shown, only show first.  This behavior follows the core taxonomy 
-  // module's taxonomy_term_page.  Term is NOT a link so page does not link to 
-  // itself.
-  if (variable_get('taxonomy_breadcrumb_show_current_term', TRUE)) {
-    $terms = taxonomy_terms_parse_string($str_tids);
-    $first_term = taxonomy_get_term($terms['tids'][0]);
-    $breadcrumb[] = $first_term->name;
-  }
-
-  drupal_set_breadcrumb($breadcrumb);
-  return $output;
-}
-
-
 function taxonomy_breadcrumb_admin_settings() {
   $form['settings'] = array(
     '#type' => 'fieldset',
@@ -277,9 +226,45 @@ function taxonomy_breadcrumb_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   // If we are on a page view (not just a teaser), set the breadcrumb
   // $a4 contains TRUE if we are on a page view
   if ($op == 'view' && $a4 && !drupal_is_front_page()) {
-    taxonomy_breadcrumb_generate_breadcrumb($node->nid);
+  
+    // See if the node type of the current node is part of the node types listed on the advanced settings page.
+    $array_of_types = explode(' ', variable_get('taxonomy_breadcrumb_node_types', TAXONOMY_BREADCRUMB_NODE_TYPES_DEFAULT));
+    $in_list = in_array($node->type, $array_of_types);
+  
+    // if the node type IS IN     the node types list and the list IS     inclusive OR 
+    // if the node type IS NOT IN the node types list and the list IS NOT inclusive (e.g. exclusive)
+    // THEN modify the breadcrumb trail.
+    if ($in_list == variable_get('taxonomy_breadcrumb_include_nodes', FALSE) ) {
+
+      // Extract lightest term from lightest vocabulary assosciated with node.
+      $term = taxonomy_breadcrumb_node_get_lightest_term($node->nid);
+      $breadcrumb = taxonomy_breadcrumb_generate_breadcrumb($term->tid);
+      drupal_set_breadcrumb($breadcrumb);
+    }
   }
 }
+
+
+/**
+ * This function overrides the core taxonomy_term_page.  First, call the core
+ * taxonomy_term_page.  Then, alter the breadcrumb trail.  This module's 
+ * hook_menu and a module weight greater than taxonomy's ensure this 
+ * function gets called for the taxonomy/term path (the module weight is
+ * in the system table and is set in taxonomy_breadcrumb.install).
+ */
+function taxonomy_breadcrumb_term_page($str_tids = '', $depth = 0, $op = 'page') {
+
+  // Call the core taxonomy_term_page function
+  $output = taxonomy_term_page($str_tids, $depth, $op);
+
+  // Use first term to generate breadcrumb trail
+  $terms = taxonomy_terms_parse_string($str_tids); 
+  $breadcrumb = taxonomy_breadcrumb_generate_breadcrumb($terms['tids'][0], TRUE);
+  drupal_set_breadcrumb($breadcrumb);
+  return $output;
+  
+}
+
 
 /**
  * Implementation of hook_help().
