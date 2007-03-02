@@ -43,6 +43,9 @@ function taxonomy_breadcrumb_install() {
                 );");
       break;
   }
+  
+  variable_set('taxonomy_breadcrumb_home', t('Home'));
+  drupal_set_message('Taxonomy breadcrumb: Taxonomy based breadcrumbs should now appear on node pages and taxonomy/term pages.  For the most common applications this module will work "out of the box" and no further configuration is necessary.  If customization is desired settings can be changed on the ' . l('administration page', 'admin/settings/taxonomy-breadcrumb') . '.');
 }
 
 function taxonomy_breadcrumb_uninstall() {
