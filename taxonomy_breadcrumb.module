@@ -180,6 +180,7 @@ function taxonomy_breadcrumb_taxonomy($op, $type, $object = NULL) {
 
     // Set variables to used in SQL query to reflect if vocabulary or term is
     // being updated.
+
     if ($type == 'vocabulary') {
       $table = '{taxonomy_breadcrumb_vocabulary}';
       $key_type = 'vid';
@@ -190,22 +191,25 @@ function taxonomy_breadcrumb_taxonomy($op, $type, $object = NULL) {
       $key_type = 'tid';
       $old_path = _taxonomy_breadcrumb_get_term_path($object['tid']);
     }
-    $key = $object[$key_type];
-    $new_path = $object['taxonomy_breadcrumb_path'];
+    $key = isset($object[$key_type]) ? $object[$key_type] : NULL;
+    $new_path = isset($object['taxonomy_breadcrumb_path']) ? $object['taxonomy_breadcrumb_path'] : NULL;
+
+    if (!is_null($new_path)) { // Only modify database when the object has the 'taxonomy_breadcrumb_path' field
 
     // Delete record from taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term
-    if (drupal_strlen($new_path) == 0 && $old_path !== NULL) {
-      db_query("DELETE FROM $table WHERE $key_type = %d", $key);
-    }
+      if (drupal_strlen($new_path) == 0 && $old_path !== NULL) {
+        db_query("DELETE FROM $table WHERE $key_type = %d", $key);
+      }
 
-    // Update existing record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term
-    elseif (drupal_strlen($new_path) != 0 && $old_path != NULL) {
-      db_query("UPDATE $table SET path = '%s' WHERE $key_type = %d", $new_path, $key );
-    }
+      // Update existing record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term
+      elseif (drupal_strlen($new_path) != 0 && $old_path != NULL) {
+        db_query("UPDATE $table SET path = '%s' WHERE $key_type = %d", $new_path, $key );
+      }
 
-    // Create new record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term
-    elseif (drupal_strlen($new_path) != 0 && $old_path == NULL) {
-      db_query("INSERT INTO $table ($key_type, path) VALUES (%d, '%s')", $key, $new_path);
+      // Create new record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term
+      elseif (drupal_strlen($new_path) != 0 && $old_path == NULL) {
+        db_query("INSERT INTO $table ($key_type, path) VALUES (%d, '%s')", $key, $new_path);
+      }
     }
   }
 }
