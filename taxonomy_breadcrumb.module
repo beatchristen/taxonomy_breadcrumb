@@ -89,6 +89,9 @@ function taxonomy_breadcrumb_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       // Extract lightest term from lightest vocabulary assosciated with node.
       $term = _taxonomy_breadcrumb_node_get_lightest_term($node->nid);
       $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb($term->tid);
+      if (variable_get('taxonomy_breadcrumb_include_node_title', FALSE)) {
+        $breadcrumb[] = $node->title;
+      }
       drupal_set_breadcrumb($breadcrumb);
     }
   }

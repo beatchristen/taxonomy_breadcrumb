@@ -29,6 +29,14 @@ function taxonomy_breadcrumb_admin_settings() {
     '#default_value'  => variable_get('taxonomy_breadcrumb_show_current_term', TRUE),
     '#description'    => t('When enabled, the lightest term associated with node is shown as the last breadcrumb in the breadcrumb trail.  When disabled, the only terms shown in the breadcrumb trail are parent terms (if any parents exist).  The recommended setting is enabled.'),
   );
+  
+  $form['settings']['taxonomy_breadcrumb_include_node_title'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => t('Show current node title in breadcrumb trail?'),
+    '#default_value'  => variable_get('taxonomy_breadcrumb_include_node_title', FALSE),
+    '#description'    => t('When enabled and when viewing a node, the node\'s title will be shown as the last breadcrumb in the breadcrumb trail.'),
+    '#weight'         => 30,
+  );
 
   $form['advanced'] = array(
     '#type'           => 'fieldset',
