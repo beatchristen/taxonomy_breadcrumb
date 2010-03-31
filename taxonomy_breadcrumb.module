@@ -79,7 +79,7 @@ function taxonomy_breadcrumb_get_term_path($tid) {
 }
 
 /**
- * If the current drupal path (q=) is /node/nid, generate the breadcrumb trail 
+ * If the current drupal path (q=) is /node/nid, generate the breadcrumb trail
  * based on nid.
  */
 function taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
@@ -89,7 +89,7 @@ function taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
   // HOME breadcrumb generation
   $home_text = variable_get('taxonomy_breadcrumb_home', '');
   if ($home_text != '') {
-    $breadcrumb[] = l(t($home_text), NULL);
+    $breadcrumb[] = l($home_text, NULL);
   }
 
   // VOCABULARY breadcrumb generation
@@ -108,7 +108,7 @@ function taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
     }
     // Do not create links to own self if we are on a taxonomy/term page.
     if ($is_term_page && $parent_term->tid == $tid) {
-      $breadcrumb[] = $parent_term->name;
+      $breadcrumb[] = check_plain($parent_term->name);
     }
     else {
       $breadcrumb[] = l($parent_term->name, $term_path);
