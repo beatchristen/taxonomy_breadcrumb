@@ -16,9 +16,7 @@ function taxonomy_breadcrumb_install() {
   $weight = (int) db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
   db_query("UPDATE {system} SET weight = %d WHERE name = 'taxonomy_breadcrumb'", $weight + 1);
 
-  variable_set('taxonomy_breadcrumb_home', t('Home'));
   drupal_set_message('Taxonomy breadcrumb: Taxonomy based breadcrumbs should now appear on node pages and taxonomy/term pages.  For the most common applications this module will work "out of the box" and no further configuration is necessary.  If customization is desired settings can be changed on the '. l('administration page', 'admin/settings/taxonomy-breadcrumb') .'.');
-
 }
 
 /**
@@ -41,7 +39,7 @@ function taxonomy_breadcrumb_uninstall() {
 function taxonomy_breadcrumb_schema() {
   return array(
     'taxonomy_breadcrumb_vocabulary' => array(
-      'description' => t('Stores categories for aggregator feeds and feed items.'),
+      'description' => 'Stores categories for aggregator feeds and feed items.',
       'fields' => array(
         'vid'   => array(
           'type'      => 'int',
@@ -56,7 +54,7 @@ function taxonomy_breadcrumb_schema() {
       'primary key' => array('vid'),
     ),
     'taxonomy_breadcrumb_term' => array(
-      'description' => t('Stores categories for aggregator feeds and feed items.'),
+      'description' => 'Stores categories for aggregator feeds and feed items.',
       'fields' => array(
         'tid'   => array(
           'type'      => 'int',
@@ -77,18 +75,40 @@ function taxonomy_breadcrumb_schema() {
  * Implementation of hook_update().
  */
 function taxonomy_breadcrumb_update_1() {
+  $ret = array();
 
   // Ensure this module's weight is larger than the core taxonomy module.
   // This allows for this module's menu callback for taxonomy/term to get called
   // instead of the core taxonomy/term callback.
   $ret[] = update_sql("UPDATE {system} SET weight = 10 WHERE name = 'taxonomy_breadcrumb'");
+
   return $ret;
 }
 
 function taxonomy_breadcrumb_update_6001() {
+  $ret = array();
+
   // Ensure this module's weight is larger than the core taxonomy module.
   // This allows for this module's menu callback for taxonomy/term to get called
   // instead of the core taxonomy/term callback.
   $weight = (int) db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
   db_query("UPDATE {system} SET weight = %d WHERE name = 'taxonomy_breadcrumb'", $weight + 1);
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function taxonomy_breadcrumb_update_6100() {
+  $ret = array();
+
+  if (variable_get('taxonomy_breadcrumb_include_nodes', 0)) {
+    variable_set('taxonomy_breadcrumb_include_nodes', 1);
+  }
+  else {
+    variable_set('taxonomy_breadcrumb_include_nodes', 0);
+  }
+
+  return $ret;
 }

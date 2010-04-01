@@ -7,38 +7,85 @@
  */
 
 /**
- * This function overrides the core taxonomy_term_page.  First, call the core
- * taxonomy_term_page.  Then, alter the breadcrumb trail.  This module's
- * hook_menu and a module weight greater than taxonomy's ensure this
- * function gets called for the taxonomy/term path (the module weight is
- * in the system table and is set in taxonomy_breadcrumb.install).
+ * Set a Taxonomy breadcrumb and call the original taxonomy/term/% callback.
+ *
+ * @param $tid
+ *   The TID of the term to call a callback for.
+ * @param $callback
+ *   The name of the original callback function.
+ * @param $file
+ *   The file the original term callback is in.
+ * @param $filepath
+ *   The path to $file.
+ * @param ...
+ *   Additional arguments to pass on to the callback.
+ *
+ * @ return
+ *   The return value of the original callback function.
  */
-function _taxonomy_breadcrumb_term_page($str_tids = '', $depth = 0, $op = 'page') {
-  // Include the .inc file with all helper functions
-  require_once drupal_get_path('module', 'taxonomy') .'/taxonomy.pages.inc';
-
-  // Call the core taxonomy_term_page function
-  $output = taxonomy_term_page($str_tids, $depth, $op);
-
-  // Use first term to generate breadcrumb trail
-  $terms = taxonomy_terms_parse_string($str_tids);
+function _taxonomy_breadcrumb_term_page($tid, $callback, $file, $filepath) {
+  require_once($filepath .'/'. $file);
+  $arguments = array_slice(func_get_args(), 4);
+  $output =  call_user_func_array($callback, $arguments);
+  // Use first term to generate breadcrumb trail.
+  $terms = taxonomy_terms_parse_string($tid);
   $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb($terms['tids'][0], TRUE);
   drupal_set_breadcrumb($breadcrumb);
   return $output;
 }
 
 /**
- * Return lightest term for given node ($nid).
- * Similar to taxonomy_node_get_terms, but only return the lightest term in the
- * lightest vocab for the node.
+ * Return lightest term for a given node.
+ *
+ * @param $node
+ *   The node object.
+ *
+ * @ return
+ *   The lightest term object associated with the node.
  */
-function _taxonomy_breadcrumb_node_get_lightest_term($nid) {
-  // We only want the first row of the result--this is the lightest term of the
-  // lightest vocab.  This query should be the same as the query found in
-  // taxonomy_node_get_terms.
-  $result = db_query(db_rewrite_sql('SELECT t.* FROM {term_node} r INNER JOIN {term_data} t ON r.tid = t.tid INNER JOIN {vocabulary} v ON t.vid = v.vid WHERE r.nid = %d ORDER BY v.weight, t.weight, t.name', 't', 'tid'), $nid);
-  $term = db_fetch_object($result);  // extract first row of query
-  return $term;
+function _taxonomy_breadcrumb_node_get_lightest_term($node) {
+  $terms = taxonomy_node_get_terms($node);
+  if (!empty($terms)) {
+    if (count($terms) > 1) {
+      foreach ($terms as $term) {
+        // Only consider terms in the lightest vocabulary.
+        if (!isset($vid)) {
+          $vid = $term->vid;
+        }
+        elseif ($term->vid != $vid) continue;
+        // If the term has parents, the weight of the term is the weight of the lightest parent.
+        $parents = taxonomy_get_parents_all($term->tid);
+        $depth = count($parents);
+        if ($depth > 0) {
+          $parent = array_pop($parents);
+          $weight = $parent->weight;
+        }
+        else {
+          $weight = $term->weight;
+        }
+        if ((isset($lweight) && ($weight < $lweight)) || !isset($lweight)) {
+          $lterm = $term;
+          $lweight = $weight;
+          $ldepth = $depth;
+        }
+        elseif (isset($lweight) && ($weight == $lweight)) {
+          // If the node has multiple child terms with the same parent, choose the child with the greatest depth.
+          if ($depth > $ldepth) {
+            $lterm = $term;
+            $ldepth = $depth;
+          }
+          elseif ($depth == $ldepth) {
+            // If the terms have the same depth, pick the term with the lightest weight.
+            $lterm = ($lterm->weight < $term->weight) ? $lterm : $term;
+          }
+        }
+      }
+      return $lterm;
+    }
+    else {
+      return array_pop($terms);
+    }
+  }
 }
 
 /**
@@ -75,48 +122,57 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
 
   $term = taxonomy_get_term($tid);
 
-  // HOME breadcrumb generation
-  $home_text = variable_get('taxonomy_breadcrumb_home', '');
+  // Generate the HOME breadcrumb.
+  $home_text = variable_get('taxonomy_breadcrumb_home', t('Home'));
   if ($home_text != '') {
-    $breadcrumb[] = l(t($home_text), NULL);
+    $breadcrumb[] = l($home_text, NULL);
   }
-  // VOCABULARY breadcrumb generation
+  // Generate the VOCABULARY breadcrumb.
   $vocabulary_path = _taxonomy_breadcrumb_get_vocabulary_path($term->vid);
   if ($vocabulary_path != NULL) {
     $vocabulary = taxonomy_vocabulary_load($term->vid);
     $breadcrumb[] = l(_taxonomy_breadcrumb_tt("taxonomy:vocabulary:$term->tid:name", $vocabulary->name), $vocabulary_path);
   }
 
-  // TERM breadcrumb generation
+  // Generate the TERM breadcrumb.
   $parent_terms = array_reverse(taxonomy_get_parents_all($tid));
   foreach ($parent_terms as $parent_term) {
     $term_path = _taxonomy_breadcrumb_get_term_path($parent_term->tid);
     if ($term_path == NULL) {
       $term_path = taxonomy_term_path(taxonomy_get_term($parent_term->tid));
     }
+    if ($term_path == '<none>') {
+      continue;
+    }
+
+    $term_title = $parent_term->name;
+    // Use the SYNONYM instead of TERM, if we want to.
+    if (variable_get('taxonomy_breadcrumb_use_synonym', FALSE)) {
+      $synonyms = taxonomy_get_synonyms($parent_term->tid);
+      if (!empty($synonyms)) {
+        $term_title = $synonyms[0];
+      }
+    }
     // Do not create links to own self if we are on a taxonomy/term page.
     if ($is_term_page && $parent_term->tid == $tid) {
-      $breadcrumb[] = _taxonomy_breadcrumb_tt("taxonomy:term:$parent_term->tid:name", $parent_term->name);
+      $breadcrumb[] = check_plain(_taxonomy_breadcrumb_tt("taxonomy:term:$parent_term->tid:name", $term_title));
     }
     else {
-      $breadcrumb[] = l(_taxonomy_breadcrumb_tt("taxonomy:term:$parent_term->tid:name", $parent_term->name), $term_path);
+      $breadcrumb[] = l(_taxonomy_breadcrumb_tt("taxonomy:term:$parent_term->tid:name", $term_title), $term_path);
     }
   }
 
-  // Remove current TERM from end of breadcrumb trail
+  // Optionally remove the current TERM from end of breadcrumb trail.
   if (!variable_get('taxonomy_breadcrumb_show_current_term', TRUE) && !is_null($breadcrumb)) {
       array_pop($breadcrumb);
   }
   return $breadcrumb;
-
 }
-
 
 /**
  * Helper function for when i18ntaxonomy module is not installed.
  */
 
 function _taxonomy_breadcrumb_tt($string_id, $default, $language = NULL) {
-
   return function_exists('tt') ? tt($string_id, $default, $language) : $default;
 }
