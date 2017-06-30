@@ -70,3 +70,87 @@ function taxonomy_breadcrumb_entity_type_alter(array &$entity_types) {
       'delete' => 'Drupal\taxonomy\Form\VocabularyDeleteForm'
     ]);
 }
+
+/**
+ * Implements hook_ENTITY_TYPE_update().
+ */
+function taxonomy_breadcrumb_taxonomy_vocabulary_update(EntityInterface $entity) {
+  if (!FieldConfig::loadByName('taxonomy_term', $entity->id(), 'taxonomy_breadcrumb_path')) {
+    FieldConfig::create(array(
+      'field_name' => 'taxonomy_breadcrumb_path',
+      'entity_type' => 'taxonomy_term',
+      'bundle' => $entity->id(),
+      'label' => t('Breadcrumb path (taxonomy_breadcrumb)'),
+      'description' => t('The image of this term.'),
+      'required' => FALSE,
+    ))->save();
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert().
+ */
+function taxonomy_breadcrumb_taxonomy_vocabulary_insert(EntityInterface $entity) {
+  if (!FieldConfig::loadByName('taxonomy_term', $entity->id(), 'taxonomy_breadcrumb_path')) {
+    FieldConfig::create(array(
+      'field_name' => 'taxonomy_breadcrumb_path',
+      'entity_type' => 'taxonomy_term',
+      'bundle' => $entity->id(),
+      'label' => t('Breadcrumb path (taxonomy_breadcrumb)'),
+      'description' => t('The image of this term.'),
+      'required' => FALSE,
+    ))->save();
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
+ */
+function taxonomy_breadcrumb_taxonomy_vocabulary_delete(EntityInterface $entity) {
+  if (FieldStorageConfig::loadByName('taxonomy_term', 'taxonomy_breadcrumb_path')) {
+    FieldConfig::loadByName('taxonomy_term', $entity->id(), 'taxonomy_breadcrumb_path')->delete();
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update().
+ */
+function taxonomy_breadcrumb_taxonomy_term_update(EntityInterface $entity) {
+  $bundle = $entity->bundle();
+  if (!FieldConfig::loadByName('taxonomy_term', $bundle, 'taxonomy_breadcrumb_path')) {
+    FieldConfig::create(array(
+      'field_name' => 'taxonomy_breadcrumb_path',
+      'entity_type' => 'taxonomy_term',
+      'bundle' => $bundle,
+      'label' => t('Breadcrumb path (taxonomy_breadcrumb)'),
+      'description' => t('The image of this term.'),
+      'required' => FALSE,
+    ))->save();
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert().
+ */
+function taxonomy_breadcrumb_taxonomy_term_insert(EntityInterface $entity) {
+  $bundle = $entity->bundle();
+  if (!FieldConfig::loadByName('taxonomy_term', $bundle, 'taxonomy_breadcrumb_path')) {
+    FieldConfig::create(array(
+      'field_name' => 'taxonomy_breadcrumb_path',
+      'entity_type' => 'taxonomy_term',
+      'bundle' => $bundle,
+      'label' => t('Breadcrumb path (taxonomy_breadcrumb)'),
+      'description' => t('The image of this term.'),
+      'required' => FALSE,
+    ))->save();
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
+ */
+function taxonomy_breadcrumb_taxonomy_term_delete(EntityInterface $entity) {
+  if (FieldStorageConfig::loadByName('taxonomy_term', 'taxonomy_breadcrumb_path')) {
+    FieldConfig::loadByName('taxonomy_term', $entity->bundle(), 'taxonomy_breadcrumb_path')->delete();
+  }
+}
