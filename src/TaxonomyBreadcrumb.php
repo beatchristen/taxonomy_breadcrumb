@@ -5,7 +5,6 @@ namespace Drupal\taxonomy_breadcrumb;
 use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Entity\Entity;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Link;
@@ -83,14 +82,15 @@ class TaxonomyBreadcrumb implements BreadcrumbBuilderInterface {
       $node_types = \Drupal::config('taxonomy_breadcrumb.settings')->get('taxonomy_breadcrumb_node_types');
       $exclude_include = \Drupal::config('taxonomy_breadcrumb.settings')->get('taxonomy_breadcrumb_include_nodes');
 
-      if($exclude_include) {
-        /// Include option.
-        if(!$node_types[$bundle]) {
+      if ($exclude_include) {
+        // Include option.
+        if (!$node_types[$bundle]) {
           return FALSE;
         }
-      } else {
+      }
+      else {
         // Exclude option.
-        if($node_types[$bundle]){
+        if ($node_types[$bundle]) {
           return FALSE;
         }
       }
@@ -128,13 +128,13 @@ class TaxonomyBreadcrumb implements BreadcrumbBuilderInterface {
           $vocabulary_label = $vocabulary_bundles[$vocabulary_machine_name];
           $vocabulary_entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($vocabulary_machine_name);
           $taxonomy_breadcrumb_path = $vocabulary_entity->getThirdPartySettings("taxonomy_breadcrumb", "taxonomy_breadcrumb_path")['taxonomy_breadcrumb_path'];
-          if($taxonomy_breadcrumb_path) {
+          if ($taxonomy_breadcrumb_path) {
             $breadcrumb->addLink(Link::createFromRoute(t($vocabulary_label), $taxonomy_breadcrumb_path));
           }
 
           // Generate the TERM breadcrumb.
           foreach ($field->referencedEntities() as $term) {
-            if($term->get('taxonomy_breadcrumb_path')->getValue()) {
+            if ($term->get('taxonomy_breadcrumb_path')->getValue()) {
               $breadcrumb->addLink(Link::fromTextAndUrl($term->get('taxonomy_breadcrumb_path')->getValue()[0]['title'], Url::fromUri('internal:' . $term->get('taxonomy_breadcrumb_path')->getValue()[0]['uri'])));
             }
             else {

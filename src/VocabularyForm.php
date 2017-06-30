@@ -40,7 +40,6 @@ class VocabularyForm extends VocabularyFormBuilderBase {
     );
   }
 
-
   /**
    * Override Drupal\Core\Config\Entity\ConfigEntityListBuilder::load().
    */
@@ -67,4 +66,5 @@ class VocabularyForm extends VocabularyFormBuilderBase {
     $vocabulary->setThirdPartySetting('taxonomy_breadcrumb', 'taxonomy_breadcrumb_path', $form_state->getValue('taxonomy_breadcrumb_path'));
     parent::save($form, $form_state);
   }
+
 }

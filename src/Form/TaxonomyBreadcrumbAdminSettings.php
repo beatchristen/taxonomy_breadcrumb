@@ -1,16 +1,15 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\taxonomy_breadcrumb\Form\TaxonomyBreadcrumbAdminSettings.
- */
-
 namespace Drupal\taxonomy_breadcrumb\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Element;
 
+/**
+ * Class TaxonomyBreadcrumbAdminSettings.
+ *
+ * @package Drupal\taxonomy_breadcrumb\Form
+ */
 class TaxonomyBreadcrumbAdminSettings extends ConfigFormBase {
 
   /**
@@ -20,7 +19,6 @@ class TaxonomyBreadcrumbAdminSettings extends ConfigFormBase {
     return 'taxonomy_breadcrumb_admin_settings';
   }
 
-
   /**
    * {@inheritdoc}
    */
@@ -28,6 +26,9 @@ class TaxonomyBreadcrumbAdminSettings extends ConfigFormBase {
     return ['taxonomy_breadcrumb.settings'];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form['settings'] = [
       '#type' => 'details',
@@ -80,7 +81,7 @@ class TaxonomyBreadcrumbAdminSettings extends ConfigFormBase {
       '#type' => 'checkboxes',
       '#title' => t('Node types to include or exclude'),
       '#default_value' => $default,
-      '#options' =>  node_type_get_names(),
+      '#options' => node_type_get_names(),
       '#description' => t('A list of node types to include or exclude when applying taxonomy-based breadcrumbs.'),
       '#weight' => 20,
     ];

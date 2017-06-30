@@ -2,8 +2,9 @@
 
 /**
  * @file
- * .install file for the taxonomy_breadcrumb module.
+ * Install file for the taxonomy_breadcrumb module.
  */
+
 use Drupal\Core\Field\FieldException;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
@@ -27,7 +28,8 @@ function taxonomy_breadcrumb_install() {
         'entity_type' => 'taxonomy_term',
         'type' => 'link',
       ))->save();
-    } catch (FieldException $e) {
+    }
+    catch (FieldException $e) {
     }
   }
 
@@ -74,7 +76,7 @@ function taxonomy_breadcrumb_uninstall() {
     }
   }
 
-  if(FieldStorageConfig::loadByName($entity_type, $field_name)){
+  if (FieldStorageConfig::loadByName($entity_type, $field_name)) {
     try {
       FieldStorageConfig::loadByName($entity_type, $field_name)->delete();
     }
@@ -82,4 +84,3 @@ function taxonomy_breadcrumb_uninstall() {
     }
   }
 }
-
