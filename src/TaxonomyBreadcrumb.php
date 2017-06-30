@@ -19,11 +19,11 @@ use Drupal\Core\Url;
 class TaxonomyBreadcrumb implements BreadcrumbBuilderInterface {
 
   /**
-   * The configuration object generator.
+   * The configuration factory.
    *
-   * @var \Drupal\Core\Config\ConfigFactory
+   * @var \Drupal\Core\Config\Config
    */
-  protected $configFactory;
+  protected $config;
 
   /**
    * The menu link manager interface.
@@ -62,7 +62,7 @@ class TaxonomyBreadcrumb implements BreadcrumbBuilderInterface {
     EntityManagerInterface $entityManager,
     MenuActiveTrailInterface $menu_active_trail
   ) {
-    $this->configFactory = $config_factory;
+    $this->config = $config_factory->getEditable('taxonomy_breadcrumb.settings');
     $this->menuLinkManager = $menu_link_manager;
     $this->entityManager = $entityManager;
     $this->termStorage = $entityManager->getStorage('taxonomy_term');
@@ -79,8 +79,8 @@ class TaxonomyBreadcrumb implements BreadcrumbBuilderInterface {
     $node_is_fieldable = $node_object instanceof FieldableEntityInterface;
     if ($node_is_fieldable) {
       $bundle = $node_object->bundle();
-      $node_types = \Drupal::config('taxonomy_breadcrumb.settings')->get('taxonomy_breadcrumb_node_types');
-      $exclude_include = \Drupal::config('taxonomy_breadcrumb.settings')->get('taxonomy_breadcrumb_include_nodes');
+      $node_types = $this->config->get('taxonomy_breadcrumb_node_types');
+      $exclude_include = $this->config->get('taxonomy_breadcrumb_include_nodes');
 
       if ($exclude_include) {
         // Include option.
@@ -109,9 +109,9 @@ class TaxonomyBreadcrumb implements BreadcrumbBuilderInterface {
     $node_is_fieldable = $node_object instanceof FieldableEntityInterface;
 
     // Generate the HOME breadcrumb.
-    if (\Drupal::configFactory()->getEditable('taxonomy_breadcrumb.settings')->get('taxonomy_breadcrumb_home')) {
-      $home = \Drupal::configFactory()->getEditable('taxonomy_breadcrumb.settings')->get('taxonomy_breadcrumb_home');
-      $breadcrumb->addLink(Link::createFromRoute(t($home), '<front>'));
+    if ($this->config->get('taxonomy_breadcrumb_home')) {
+      $home = $this->config->get('taxonomy_breadcrumb_home');
+      $breadcrumb->addLink(Link::createFromRoute($home, '<front>'));
     }
 
     // Generate the VOCABULARY breadcrumb.
@@ -129,13 +129,13 @@ class TaxonomyBreadcrumb implements BreadcrumbBuilderInterface {
           $vocabulary_entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($vocabulary_machine_name);
           $taxonomy_breadcrumb_path = $vocabulary_entity->getThirdPartySettings("taxonomy_breadcrumb", "taxonomy_breadcrumb_path")['taxonomy_breadcrumb_path'];
           if ($taxonomy_breadcrumb_path) {
-            $breadcrumb->addLink(Link::createFromRoute(t($vocabulary_label), $taxonomy_breadcrumb_path));
+            $breadcrumb->addLink(Link::fromTextAndUrl($vocabulary_label, Url::fromUri('base:/' . $taxonomy_breadcrumb_path)));
           }
 
           // Generate the TERM breadcrumb.
           foreach ($field->referencedEntities() as $term) {
             if ($term->get('taxonomy_breadcrumb_path')->getValue()) {
-              $breadcrumb->addLink(Link::fromTextAndUrl($term->get('taxonomy_breadcrumb_path')->getValue()[0]['title'], Url::fromUri('internal:' . $term->get('taxonomy_breadcrumb_path')->getValue()[0]['uri'])));
+              $breadcrumb->addLink(Link::fromTextAndUrl($term->get('taxonomy_breadcrumb_path')->getValue()[0]['title'], Url::fromUri($term->get('taxonomy_breadcrumb_path')->getValue()[0]['uri'])));
             }
             else {
               $breadcrumb->addLink(Link::createFromRoute($term->getName(), 'entity.taxonomy_term.canonical', ['taxonomy_term' => $term->id()]));

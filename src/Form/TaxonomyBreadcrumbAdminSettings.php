@@ -32,39 +32,39 @@ class TaxonomyBreadcrumbAdminSettings extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form['settings'] = [
       '#type' => 'details',
-      '#title' => t('Basic settings'),
+      '#title' => $this->t('Basic settings'),
       '#open' => TRUE,
     ];
 
     $form['settings']['taxonomy_breadcrumb_home'] = [
       '#type' => 'textfield',
-      '#title' => t('Home breadcrumb text'),
+      '#title' => $this->t('Home breadcrumb text'),
       '#default_value' => \Drupal::config('taxonomy_breadcrumb.settings')->get('taxonomy_breadcrumb_home'),
-      '#description' => t('Text to display at top of breadcrumb trail. Typically home or your site name. Leave blank to have no home breadcrumb.'),
+      '#description' => $this->t('Text to display at top of breadcrumb trail. Typically home or your site name. Leave blank to have no home breadcrumb.'),
     ];
 
     $form['settings']['taxonomy_breadcrumb_page_title'] = [
       '#type' => 'checkbox',
-      '#title' => t('Show current page title in breadcrumb trail'),
+      '#title' => $this->t('Show current page title in breadcrumb trail'),
       '#default_value' => \Drupal::config('taxonomy_breadcrumb.settings')->get('taxonomy_breadcrumb_page_title'),
-      '#description' => t("If enabled, the page title will be added as the last item in the breadcrumb trail."),
+      '#description' => $this->t("If enabled, the page title will be added as the last item in the breadcrumb trail."),
       '#weight' => 30,
     ];
 
     $form['advanced'] = [
       '#type' => 'details',
-      '#description' => t('Use these advanced settings to control which node types the taxonomy-based breadcrumbs will be generated for.  This allows the taxonomy breadcrumb module to peacefully coexist with modules that define their own breadcrumbs, such as the book module.'),
-      '#title' => t('Advanced settings'),
+      '#description' => $this->t('Use these advanced settings to control which node types the taxonomy-based breadcrumbs will be generated for.  This allows the taxonomy breadcrumb module to peacefully coexist with modules that define their own breadcrumbs, such as the book module.'),
+      '#title' => $this->t('Advanced settings'),
       '#open' => TRUE,
     ];
 
     $form['advanced']['taxonomy_breadcrumb_include_nodes'] = [
       '#type' => 'radios',
-      '#title' => t('Include or exclude the following node types'),
+      '#title' => $this->t('Include or exclude the following node types'),
       '#default_value' => \Drupal::config('taxonomy_breadcrumb.settings')->get('taxonomy_breadcrumb_include_nodes'),
       '#options' => [
-        1 => t('Include'),
-        0 => t('Exclude'),
+        1 => $this->t('Include'),
+        0 => $this->t('Exclude'),
       ],
       '#weight' => 10,
     ];
@@ -79,10 +79,10 @@ class TaxonomyBreadcrumbAdminSettings extends ConfigFormBase {
 
     $form['advanced']['taxonomy_breadcrumb_node_types'] = [
       '#type' => 'checkboxes',
-      '#title' => t('Node types to include or exclude'),
+      '#title' => $this->t('Node types to include or exclude'),
       '#default_value' => $default,
       '#options' => node_type_get_names(),
-      '#description' => t('A list of node types to include or exclude when applying taxonomy-based breadcrumbs.'),
+      '#description' => $this->t('A list of node types to include or exclude when applying taxonomy-based breadcrumbs.'),
       '#weight' => 20,
     ];
 
