@@ -35,6 +35,30 @@ use Drupal\field\Entity\FieldStorageConfig;
 
 define('TAXONOMY_BREADCRUMB_NODE_TYPES_DEFAULT', 'book');
 
+/**
+ * Implements hook_help().
+ */
+function taxonomy_breadcrumb_help($path) {
+  switch ($path) {
+    case 'admin/help#taxonomy_breadcrumb':
+      $output = '<p>' . t('The taxonomy_breadcrumb module generates taxonomy based breadcrumbs on node pages and taxonomy/term pages. The breadcrumb trail takes on the form:') . '</p>';
+      $output .= '<p>' . t('[HOME] >> [VOCABULARY] >> TERM >> [TERM] ...') . '</p>';
+      $output .= '<ul>';
+      $output .= '<li>' . t('The text displayed for HOME is configurable below. The <em>HOME</em> breadcrumb (if present) links to the homepage. The text displayed for HOME is configurable by an administrator. If the HOME breadcrumb is not defined by the administrator, it will not appear in the breadcrumb trail.') . '</li>';
+      $output .= '<li>' . t('The <em>VOCABULARY</em> breadcrumb (if present) will link to an administrator defined page. If the VOCABULARY does not have an administrator defined page, it will not appear in the breadcrumb trail. This can be configured on the add/edit vocabulary pages within <a href="@taxonomy">Structure >> Taxonomy</a>', array('@taxonomy' => \Drupal\Core\Url::fromRoute('entity.taxonomy_vocabulary.collection'))) . '</li>';
+      $output .= '<li>' . t('Each <em>TERM</em> breadcrumb will link to either (1) taxonomy/term/tid by default, or (2) an administrator defined page if one is defined for the term. This can be configured on the add/edit term pages within <a href="@taxonomy">Structure >> Taxonomy</a>', array('@taxonomy' => \Drupal\Core\Url::fromRoute('entity.taxonomy_vocabulary.collection'))) . '</li>';
+      $output .= '</ul>';
+      $output .= '<h3>' . t('Examples:') . '</h3>';
+      $output .= '<ul>';
+      $output .= '<li>' . t('home >> term >> term') . '</li>';
+      $output .= '<li>' . t('mysite >> term >> term') . '</li>';
+      $output .= '<li>' . t('home >> vocabulary >> term >> term') . '</li>';
+      $output .= '<li>' . t('vocabulary >> term >> term') . '</li>';
+      $output .= '</ul>';
+
+      return $output;
+  }
+}
 
 /**
  * Implements hook_ENTITY_TYPE_alter().
