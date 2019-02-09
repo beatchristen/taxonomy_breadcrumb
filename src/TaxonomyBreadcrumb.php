@@ -127,7 +127,7 @@ class TaxonomyBreadcrumb implements BreadcrumbBuilderInterface {
           $entity_type = 'taxonomy_vocabulary';
           $vocabulary_label = $vocabulary_bundles[$vocabulary_machine_name];
           $vocabulary_entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($vocabulary_machine_name);
-          $taxonomy_breadcrumb_path = $vocabulary_entity->getThirdPartySettings("taxonomy_breadcrumb", "taxonomy_breadcrumb_path")['taxonomy_breadcrumb_path'];
+          $taxonomy_breadcrumb_path = isset($vocabulary_entity->getThirdPartySettings("taxonomy_breadcrumb", "taxonomy_breadcrumb_path")['taxonomy_breadcrumb_path']) ? $vocabulary_entity->getThirdPartySettings("taxonomy_breadcrumb", "taxonomy_breadcrumb_path")['taxonomy_breadcrumb_path'] : '';
           if ($taxonomy_breadcrumb_path) {
             $breadcrumb->addLink(Link::fromTextAndUrl($vocabulary_label, Url::fromUri('base:/' . $taxonomy_breadcrumb_path)));
           }
