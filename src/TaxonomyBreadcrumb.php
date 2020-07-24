@@ -5,7 +5,7 @@ namespace Drupal\taxonomy_breadcrumb;
 use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Menu\MenuActiveTrailInterface;
@@ -35,9 +35,9 @@ class TaxonomyBreadcrumb implements BreadcrumbBuilderInterface {
   /**
    * The entity manager.
    *
-   * @var \Drupal\Core\Entity\EntityManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityManager;
+  protected $entityTypeManager;
 
   /**
    * The taxonomy storage.
@@ -59,13 +59,13 @@ class TaxonomyBreadcrumb implements BreadcrumbBuilderInterface {
   public function __construct(
     ConfigFactoryInterface $config_factory,
     MenuLinkManagerInterface $menu_link_manager,
-    EntityManagerInterface $entityManager,
+    EntityTypeManagerInterface $entityTypeManager,
     MenuActiveTrailInterface $menu_active_trail
   ) {
     $this->config = $config_factory->getEditable('taxonomy_breadcrumb.settings');
     $this->menuLinkManager = $menu_link_manager;
-    $this->entityManager = $entityManager;
-    $this->termStorage = $entityManager->getStorage('taxonomy_term');
+    $this->entityTypeManager = $entityTypeManager;
+    $this->termStorage = $entityTypeManager->getStorage('taxonomy_term');
     $this->menuActiveTrail = $menu_active_trail;
   }
 

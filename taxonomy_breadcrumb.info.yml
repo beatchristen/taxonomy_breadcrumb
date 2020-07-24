@@ -3,4 +3,5 @@ description: 'Enables taxonomy based breadcrumbs and allows for node association
 dependencies:
   - taxonomy
 core: 8.x
+core_version_requirement: ^8 || ^9
 type: module
